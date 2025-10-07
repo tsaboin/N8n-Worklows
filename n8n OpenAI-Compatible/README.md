@@ -5,7 +5,7 @@ This project exposes your n8n workflows as an OpenAI-compatible API. It lets cha
 
 #### How It Works
 
-The system uses two endpoints. The `/models` endpoint lists your tagged workflows. The `/chat/completions` endpoint processes prompts, supporting both JSON and streaming text responses [1].
+The system uses two endpoints. The `/models` endpoint lists your tagged workflows. The `/chat/completions` endpoint processes prompts, supporting both JSON and streaming text responses.
 
 #### Usage
 
@@ -16,3 +16,7 @@ The system uses two endpoints. The `/models` endpoint lists your tagged workflow
 This enables centralized management of your n8n agents from a single interface.
 
 NOTE: We used 'cf-ray' in the header (from cloudflare session) as for the Stream and Completion response. Do not forget to edit it to your choice form of ID. For your case, you might pass the session ID from your client calling the /chat/completions endpoint and use it.
+
+---
+
+Made with ❤️ by the Lucidus Fortis team
