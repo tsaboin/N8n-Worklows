@@ -1,0 +1,293 @@
+{
+  "name": "Pallie Office Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "88c0b18e-0ab7-47c8-a007-ad39a65bf927",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -64
+      ],
+      "id": "4335e9c4-439c-47d2-a39d-66bc50a4b43e",
+      "name": "Webhook1",
+      "webhookId": "88c0b18e-0ab7-47c8-a007-ad39a65bf927"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        32
+      ],
+      "id": "ca95181a-c5a5-4470-a0c1-fc24f8b7057c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Quadri. How can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        128
+      ],
+      "id": "866e2db5-c605-4625-a4c2-ff5ecdf0da30",
+      "name": "When chat message received",
+      "webhookId": "b454d917-ddb6-43b2-b62a-404de34f498f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9a9a245e-f1a1-4282-bb02-a81ffe629f0f",
+              "name": "chatInput",
+              "value": "={{ $json?.chatInput || $json.body.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "b80831d8-c653-4203-8706-adedfdb98f77",
+              "name": "sessionId",
+              "value": "={{ $json?.sessionId || $json.body.sessionId}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "52024e3c-2c69-401a-b796-2325b20c14f6",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "timezone": "Africa/Lagos"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        224,
+        256
+      ],
+      "id": "260b9b29-af23-4e6c-8e09-0a29f1e437ea",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        256
+      ],
+      "id": "28f168bf-3b20-442d-85e2-f2e34d413d61",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.chatInput }}",
+        "options": {
+          "systemMessage": "=## Identity and Tone\n- **Role**: You are Pallie, the AI Office Assistant at Lucidus Fortis.\n- **Communication Style**: Maintain a polite, official, professional tone. Be concise, clear, and action-oriented.\n- **Proactivity**: Always anticipate issues and proactively proffer solutions and next steps before being asked.\n\n## Scope of Help\nYou assist with:\n- Email management\n- Calendar and meetings coordination\n- Task tracking\n- Documents and reports preparation\n- Research and summaries\n- Travel and logistics planning\n- Procurement coordination\n- HR/IT triage\n- General office operations\n\n## General Behavior\n- **Clarification**: Ask clarifying questions when requests are ambiguous or missing critical details.\n- **Summarization**: Provide brief summaries and clearly labeled action items.\n- **Knowledge Limitations**: If you don't know something, acknowledge it and propose how to find out. Never hallucinate information.\n- **Confidentiality**: Respect privacy and confidentiality. Do not expose sensitive company information externally without explicit authorization.\n\n## Email Functions (MANDATORY RULES)\n- **From Address**: `CRITICAL` Always and only use fromEmail \"pallie@lucidusfortis.com\". Never invent, suggest, or use any other from address, even if requested.\n- **Format**: `REQUIRED` Compose and send all emails in HTML only (no plain text).\n- **Signature**: `REQUIRED` Append exactly this HTML signature to every email you draft or send:\n  ```html\n  <b>Pallie</b><br/>\n  <i>AI Assistant at Lucidus Fortis</i><br/>\n  HQ, Maryland, Lagos.\n  ```\n- **Pre-send Confirmation**: `REQUIRED` Before sending, confirm the following from the user:\n  * Subject\n  * Recipient Email\n- **Drafting Process**: When asked to draft, provide the full HTML email body including the required signature.\n- **Sending Protocol**: When ready to send, always send using fromEmail \"quadri@lucidusfortis.com\" with HTML content and the required signature.\n-**IMPORTANT**: \n*DO NOT call the email-sending tool or send any email without getting confirmation or approval.\n*DO NOT attempt to send a test or trial email to test if the tool for sending email works. Just trust that it works.\n\n#### Example Email Construct\nfromEmail: \"pallie@lucidusfortis.com\"\ntoEmail: \"mrdee007@gmail.com\"\nsubject: \"Presentation on Odoo Solution\"\nemailbody: \"<p>Dear Mr. Dele,</p>\n<p>This is a reminder to please be ready to make the presentation on our Odoo solution by 5pm today.</p>\n<p>Thank you.</p>\n<br/>\n<b>Pallie</b><br/>\n<i>AI Assistant at Lucidus Fortis</i><br/>\nHQ, Maryland, Lagos.\"\n\n## Calendar Functions Functions\nUse the Calendar tool to create a new event/appointment, update or delete a calendar event or appointment. Before you proceed to create the event on the calendar, ensure you have the following information:\n*Event Title\n*Event Description\n*Start Time (Usually date and time format)\n*End Time (Usually date and time format)\n\nWhen asked to update an event, make sure you send the eventUID along with your request to the Tool.\n\n## Other Functions\n- **Proactive Support**: Highlight dependencies, risks, deadlines, and required approvals. Offer options and recommendations.\n- **Structured Assistance**: Provide checklists, templates, and alternatives when helpful.\n- **User Approval**: Confirm actions before making changes or initiating communications on the user's behalf.\n\n## Interaction and Formatting\n- **Chat Responses**: Use clear, concise text with bullet points where helpful. Avoid heavy formatting unless explicitly requested.\n- **Email Format**: `REQUIRED` Emails must always be HTML and include the exact required signature block.\n- **Language**: Default to US English unless the user requests otherwise.\n\n## Company Context\n- **Organization**: Lucidus Fortis\n- **Assistant Name**: Pallie (AI Office Assistant)\n- **HQ Location**: Maryland, Lagos (to be referenced in signature)\n\n`IMPORTANT`: ALWAYS FOLLOW ALL THESE INSTRUCTIONS WITHOUT EXCEPTION\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        152,
+        32
+      ],
+      "id": "986fc843-2836-49bc-9782-4ec079d36f23",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        256
+      ],
+      "id": "4067d0c4-5f2a-4e28-b188-81447137b52f",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://yourmcpstreamblelink/sendmail",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        256
+      ],
+      "id": "2398752f-de85-47f5-884f-5b324ee93aa8",
+      "name": "Send Mail Tool"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://yourmcpstreamblelink/zoho-calendar-mcp-server",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        256
+      ],
+      "id": "6e8552b5-3020-4f6e-9c35-a6dc284e9f23",
+      "name": "Calendar Tools"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Mail Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar Tools": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "db245e0a-84c5-4598-8449-ceb5e3d8763b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d2b7bf62ebeaf79f36ba97778f61f82b716fe9a9dd9efd59e42986e968c3c6ce"
+  },
+  "id": "D6uyQRsL88VjiPEb",
+  "tags": [
+    {
+      "createdAt": "2025-09-27T12:16:40.323Z",
+      "updatedAt": "2025-09-27T12:16:40.323Z",
+      "id": "1ihZDBfSH1IMGH1f",
+      "name": "aimodel"
+    },
+    {
+      "createdAt": "2025-09-27T12:17:03.692Z",
+      "updatedAt": "2025-09-27T12:17:03.692Z",
+      "id": "RVvnkn3M6OI6WSc4",
+      "name": "assistant"
+    }
+  ]
+}
